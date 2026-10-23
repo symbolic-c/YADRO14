@@ -1,11 +1,9 @@
-#include "NetworkManager.h"
-
+#include <network/NetworkManager.h>
 #include <cstdint>
 #include <iostream>
 #include <vector>
 #include <iomanip>
-
-#include "AllPackets.h"
+#include <network/AllPackets.h>
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -14,9 +12,8 @@
     #include <unistd.h>
 #endif
 
-class ClientSession {};
-
 void NetworkManager::handleClient(int client_sock) {
+    ClientSession session(client_sock);
     std::vector<uint8_t> rawBuffer(8192);
 
     while (true) {
@@ -34,9 +31,7 @@ void NetworkManager::handleClient(int client_sock) {
             auto packet = PacketFactory::createPacket(packetId);
             if (packet) {
                 packet->read(buffer);
-
-                ClientSession dummySession;
-                packet->handle(dummySession);
+                packet->handle(session);
             } else {
                 std::cerr << "Неизвестный пакет: " << (int)packetId << std::endl;
                 break;

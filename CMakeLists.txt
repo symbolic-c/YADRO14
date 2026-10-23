@@ -4,7 +4,8 @@ project(YADRO14_CORE CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(src)
+# Указываем компилятору, что корень наших include — это папка src
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
 add_executable(YADRO14_CORE
         src/main.cpp

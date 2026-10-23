@@ -1,9 +1,9 @@
 #pragma once
-#include "Packet.h"
+
 #include <unordered_map>
 #include <functional>
-
-#include "PacketIds.h"
+#include <network/Packet.h>
+#include <network/PacketIds.h>
 
 class PacketFactory {
 public:
