@@ -1,0 +1,8 @@
+//
+// Created by dmimir on 23.10.2026.
+//
+
+#ifndef YADRO14_CORE_BYTEBUFFER_H
+#define YADRO14_CORE_BYTEBUFFER_H
+
+#endif //YADRO14_CORE_BYTEBUFFER_H
