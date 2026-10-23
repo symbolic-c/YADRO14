@@ -1,0 +1,1 @@
+![alt text](https://github.com/symbolic-c/YADRO14/blob/assets/assets/LOGO_GITHUB.png?raw=true)
