@@ -32,6 +32,10 @@ public:
     float yaw = 0.0f;
     float pitch = 0.0f;
     bool onGround = false;
+
+    int lastChunkX = 9999; // Изначально ставим несуществующий чанк
+    int lastChunkZ = 9999;
 private:
     int client_sock;
+    std::mutex sendMutex;
 };

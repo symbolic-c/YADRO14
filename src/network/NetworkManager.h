@@ -4,5 +4,7 @@
 class NetworkManager {
 public:
     void handleClient(int client_sock);
-    void sendPacket(int client_sock, Packet& packet);
+private:
+    void spawnPlayer(ClientSession& session);
+    void loadChunksAroundPlayer(ClientSession& session);
 };

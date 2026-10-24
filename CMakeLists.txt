@@ -11,6 +11,7 @@ add_executable(YADRO14_CORE
         src/main.cpp
         src/core/Server.cpp
         src/network/NetworkManager.cpp
+        src/world/FlatWorldGenerator.cpp
 )
 
 find_package(ZLIB REQUIRED)

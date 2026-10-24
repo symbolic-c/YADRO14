@@ -32,6 +32,8 @@ public:
     }
 
     void handle(ClientSession& session) override {
-        // Пока ничего не делаем, просто поглощаем пакет
+        session.x = x;
+        session.y = y;
+        session.z = z;
     }
 };
