@@ -3,8 +3,7 @@
 #include <network/Packet.h>
 #include <network/PacketIds.h>
 #include <iostream>
-
-#include "Packet13PlayerLookMove.h"
+#include "Packet3Chat.h"
 
 class Packet1Login : public Packet {
 public:
@@ -40,7 +39,12 @@ public:
     }
 
     void handle(ClientSession& session) override {
+        session.username = username;
         std::cout << "[Сервер] Получен Login от " << username << std::endl;
+
+        Packet3Chat chat_response;
+        chat_response.message = username + " joined da game.";
+        session.sendPacket(chat_response);
 
         Packet1Login response;
         response.protocolVersion = 14;

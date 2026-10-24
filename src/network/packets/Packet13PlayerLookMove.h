@@ -9,7 +9,7 @@ public:
 
     Packet13PlayerLookMove() = default;
 
-    PacketId getId() const override { return PacketId::PositionLook; }
+    PacketId getId() const override { return PacketId::PlayerLookMove; }
 
     void read(ByteBuffer& buffer) override {
         x = buffer.readDouble();

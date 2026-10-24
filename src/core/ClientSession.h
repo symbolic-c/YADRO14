@@ -1,6 +1,6 @@
 #pragma once
 #include <network/Packet.h>
-
+#include <atomic>
 #ifdef _WIN32
     #include <winsock2.h>
 #else
@@ -21,10 +21,17 @@ public:
         std::cout << "Packet " << static_cast<int>(packet.getId()) << " send" << std::endl;
     }
 
-    bool isLoggedIn = false;
+    std::atomic<bool> isLoggedIn{false};
     bool hasSpawned = false;
     int32_t entityId = 1;
     std::string username;
+
+    double x = 8.5;
+    double y = 64.0;
+    double z = 8.5;
+    float yaw = 0.0f;
+    float pitch = 0.0f;
+    bool onGround = false;
 private:
     int client_sock;
 };

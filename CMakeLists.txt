@@ -13,6 +13,9 @@ add_executable(YADRO14_CORE
         src/network/NetworkManager.cpp
 )
 
+find_package(ZLIB REQUIRED)
+target_link_libraries(YADRO14_CORE PRIVATE ZLIB::ZLIB)
+
 if(WIN32)
     target_link_libraries(YADRO14_CORE PRIVATE ws2_32)
 endif()
