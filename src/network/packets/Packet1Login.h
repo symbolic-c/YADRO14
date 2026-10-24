@@ -4,10 +4,14 @@
 #include <network/PacketIds.h>
 #include <iostream>
 
+#include "Packet13PlayerLookMove.h"
+
 class Packet1Login : public Packet {
 public:
     // Поля для ответа сервера
+    int32_t protocolVersion = 14;
     int32_t entityId = 1;
+    int64_t mapSeed = 0;
     int64_t seed = 0;
     int8_t dimension = 0;
     std::string username;
@@ -15,12 +19,15 @@ public:
     PacketId getId() const override { return PacketId::Login; }
 
     void read(ByteBuffer& buffer) override {
-        // Клиент присылает: Protocol Version (int), Username (String), Map Seed (long), Dimension (byte)
-        // Для простоты мы можем просто прочитать никнейм, так как версия протокола нам не важна
-        int32_t protocolVersion = buffer.readInt32();
+        protocolVersion = buffer.readInt32();
         username = buffer.readString();
-        // Остальные данные (seed и dimension) клиент тоже шлет, но мы их игнорируем
-        std::cout << "[Login] Клиент прислал логин. Ник: " << username << std::endl;
+        mapSeed = buffer.readInt64();
+        dimension = buffer.readByte();
+
+        std::cout << "[Login] Protocol: " << protocolVersion
+                  << ", User: " << username
+                  << ", Seed: " << mapSeed
+                  << ", Dim: " << (int)dimension << std::endl;
     }
 
     void write(ByteBuffer& buffer) const override {
@@ -36,10 +43,14 @@ public:
         std::cout << "[Сервер] Получен Login от " << username << std::endl;
 
         Packet1Login response;
-        response.entityId = 1;
+        response.protocolVersion = 14;
         response.username = username;
-        response.seed = 0;
+        response.mapSeed = 0;
         response.dimension = 0;
         session.sendPacket(response);
+        session.isLoggedIn = true;
+
+
+        std::cout << "[Сервер] Отправлен Login." << std::endl;
     }
 };

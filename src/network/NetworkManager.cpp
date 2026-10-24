@@ -32,6 +32,26 @@ void NetworkManager::handleClient(int client_sock) {
             if (packet) {
                 packet->read(buffer);
                 packet->handle(session);
+
+                if (session.isLoggedIn && !session.hasSpawned) {
+                    std::cout << "[Сервер] Игрок залогинен. Спавним..." << std::endl;
+
+                    // 1. Отправляем PositionLook (ID 13)
+                    Packet13PlayerLookMove pos;
+                    pos.x = 8.5;
+                    pos.y = 64.0;
+                    pos.stance = 65.62;
+                    pos.z = 8.5;
+                    pos.yaw = 0;
+                    pos.pitch = 0;
+                    pos.onGround = false;
+                    session.sendPacket(pos);
+
+                    // 2. Отправляем чанки (ID 50 + 51)
+                    // (Ваш код отправки чанков)
+
+                    session.hasSpawned = true; // Защита от повторной отправки
+                }
             } else {
                 std::cerr << "Неизвестный пакет: " << (int)packetId << std::endl;
                 break;

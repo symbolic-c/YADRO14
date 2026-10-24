@@ -20,6 +20,11 @@ public:
         send(client_sock, (const char*)buffer.data.data(), buffer.data.size(), 0);
         std::cout << "Packet " << static_cast<int>(packet.getId()) << " send" << std::endl;
     }
+
+    bool isLoggedIn = false;
+    bool hasSpawned = false;
+    int32_t entityId = 1;
+    std::string username;
 private:
     int client_sock;
 };

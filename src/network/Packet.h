@@ -13,5 +13,5 @@ public:
 
     virtual void read(ByteBuffer& buffer) = 0;
     virtual void write(ByteBuffer& buffer) const = 0;
-    virtual void handle(ClientSession& session) {}
+    virtual void handle(ClientSession& session) = 0;
 };
