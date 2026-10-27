@@ -10,6 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 add_executable(YADRO14_CORE
         src/main.cpp
         src/core/Server.cpp
+        src/core/PlayerManager.cpp
         src/network/NetworkManager.cpp
         src/world/FlatWorldGenerator.cpp
 )

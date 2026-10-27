@@ -1,7 +1,9 @@
 #include "Server.h"
 
 #include <iostream>
+#include <network/packets/Packet29DestroyEntity.h>
 
+#include "ClientSession.h"
 #include "../network/NetworkManager.h"
 
 #ifdef _WIN32
@@ -15,8 +17,6 @@
 #endif
 
 Server::Server(uint16_t port) : port(port) {}
-
-Server::~Server() {}
 
 void Server::start() {
 #ifdef _WIN32
@@ -62,13 +62,24 @@ void Server::start() {
 
         std::cout << "[Сервер] Новое подключение! Создан поток." << std::endl;
 
-        std::thread([client_sock]() {
-            NetworkManager network_manager;
-            network_manager.handleClient(client_sock);
+        auto session = std::make_shared<ClientSession>(client_sock);
+        session->entityId = nextEntityId++; // Уникальный ID
+        playerManager.addSession(session);
+
+        std::thread([this, session]() {
+            NetworkManager network(&playerManager);
+            network.handleClient(session);
+
+            playerManager.removeSession(session->entityId);
+
+            // Сообщаем всем, что игрок вышел
+            Packet29DestroyEntity destroy;
+            destroy.entityId = session->entityId;
+            playerManager.broadcast(destroy);
 #ifdef _WIN32
-            closesocket(client_sock);
+            closesocket(session->entityId);
 #else
-            close(client_sock);
+            close(session->entityId);
 #endif
             std::cout << "[Сервер] Поток игрока завершен." << std::endl;
         }).detach();

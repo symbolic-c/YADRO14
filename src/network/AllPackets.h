@@ -9,7 +9,10 @@
 #include "packets/Packet12PlayerLook.h"
 #include "packets/Packet13PlayerLookMove.h"
 #include "packets/Packet19EntityAction.h"
+#include "packets/Packet20NamedEntitySpawn.h"
 #include "packets/Packet255KickDisconnect.h"
+#include "packets/Packet29DestroyEntity.h"
+#include "packets/Packet34EntityTeleport.h"
 #include "packets/Packet3Chat.h"
 #include "packets/Packet50PreChunk.h"
 #include "packets/Packet51MapChunk.h"
@@ -25,6 +28,9 @@ inline void registerAllPackets() {
     PacketFactory::registerPacket(PacketId::PlayerLook, []() { return std::make_shared<Packet12PlayerLook>(); });
     PacketFactory::registerPacket(PacketId::PlayerLookMove, []() { return std::make_shared<Packet13PlayerLookMove>(); });
     PacketFactory::registerPacket(PacketId::EntityAction, []() { return std::make_shared<Packet19EntityAction>(); });
+    PacketFactory::registerPacket(PacketId::NamedEntitySpawn, []() { return std::make_shared<Packet20NamedEntitySpawn>(); });
+    PacketFactory::registerPacket(PacketId::DestroyEntity, []() { return std::make_shared<Packet29DestroyEntity>(); });
+    PacketFactory::registerPacket(PacketId::EntityTeleport, []() { return std::make_shared<Packet34EntityTeleport>(); });
     PacketFactory::registerPacket(PacketId::PreChunk, []() { return std::make_shared<Packet50PreChunk>(); });
     PacketFactory::registerPacket(PacketId::MapChunk, []() { return std::make_shared<Packet51MapChunk>(); });
     PacketFactory::registerPacket(PacketId::KickDisconnect, []() { return std::make_shared<Packet255KickDisconnect>(); });

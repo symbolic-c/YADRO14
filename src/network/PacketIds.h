@@ -18,6 +18,9 @@ enum class PacketId : uint8_t {
 
     // --- Только от Сервера к Клиенту (Clientbound) ---
 
+    NamedEntitySpawn = 0x14,
+    DestroyEntity   = 0x1D,
+    EntityTeleport  = 0x22,
     PreChunk        = 0x32,
     MapChunk        = 0x33,
 

@@ -1,10 +1,13 @@
 #pragma once
+#include <core/PlayerManager.h>
 #include <network/Packet.h>
 
 class NetworkManager {
 public:
-    void handleClient(int client_sock);
+    NetworkManager(PlayerManager* pm) : playerManager(pm) {}
+    void handleClient(std::shared_ptr<ClientSession> session);
+
 private:
-    void spawnPlayer(ClientSession& session);
-    void loadChunksAroundPlayer(ClientSession& session);
+    PlayerManager* playerManager;
+    void spawnPlayer(std::shared_ptr<ClientSession> session);
 };

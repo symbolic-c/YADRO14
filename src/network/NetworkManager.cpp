@@ -173,19 +173,14 @@ void sendSingleChunk(ClientSession& session, int cx, int cz) {
 }
 
 
-void NetworkManager::spawnPlayer(ClientSession& session) {
-    std::cout << "[Сервер] Спавн игрока..." << std::endl;
+void NetworkManager::spawnPlayer(std::shared_ptr<ClientSession> session) {
+    std::cout << "[Сервер] Спавн игрока " << session->username << std::endl;
 
     // 1. Отправляем PositionLook (ID 13)
     Packet13PlayerLookMove pos;
-    pos.x = 8.5;
-    pos.y = 64.0;
-    pos.stance = 65.62;
-    pos.z = 8.5;
-    pos.yaw = 0;
-    pos.pitch = 0;
-    pos.onGround = false;
-    session.sendPacket(pos);
+    pos.x = session->x; pos.y = session->y; pos.stance = session->y + 1.62;
+    pos.z = session->z; pos.yaw = 0; pos.pitch = 0; pos.onGround = false;
+    session->sendPacket(pos);
 
     int chunkCoords[2] = {0, 1};
 
@@ -196,7 +191,7 @@ void NetworkManager::spawnPlayer(ClientSession& session) {
             pre.x = cx;
             pre.z = cz;
             pre.load = true;
-            session.sendPacket(pre);
+            session->sendPacket(pre);
 
             // MapChunk (ID 51)
             Packet51MapChunk chunk;
@@ -207,18 +202,41 @@ void NetworkManager::spawnPlayer(ClientSession& session) {
             chunk.height = 127;
             chunk.length = 15;
             chunk.rawData = FlatWorldGenerator::generateChunk();
-            session.sendPacket(chunk);
+            session->sendPacket(chunk);
         }
     }
+
+    // 3. Спавн других игроков у себя
+    for (auto& other : playerManager->getSessions()) {
+        if (other->entityId != session->entityId && other->hasSpawned) {
+            Packet20NamedEntitySpawn spawnOther;
+            spawnOther.entityId = other->entityId;
+            spawnOther.name = other->username;
+            spawnOther.x = (int32_t)(other->x * 32.0);
+            spawnOther.y = (int32_t)(other->y * 32.0);
+            spawnOther.z = (int32_t)(other->z * 32.0);
+            spawnOther.heldItem = 0; // Обязательно!
+            session->sendPacket(spawnOther);
+        }
+    }
+
+    // 4. Спавн себя у других
+    Packet20NamedEntitySpawn mySpawn;
+    mySpawn.entityId = session->entityId;
+    mySpawn.name = session->username;
+    mySpawn.x = (int32_t)(session->x * 32.0);
+    mySpawn.y = (int32_t)(session->y * 32.0);
+    mySpawn.z = (int32_t)(session->z * 32.0);
+    mySpawn.heldItem = 0;
+    playerManager->broadcast(mySpawn, session->entityId);
 }
 
-void NetworkManager::handleClient(int client_sock) {
-    ClientSession session(client_sock);
+void NetworkManager::handleClient(std::shared_ptr<ClientSession> session) {
     std::vector<uint8_t> rawBuffer(8192);
 
     // Основной цикл чтения
     while (true) {
-        int bytesRead = recv(client_sock, (char*)rawBuffer.data(), rawBuffer.size(), 0);
+        int bytesRead = recv(session->getSocket(), (char*)rawBuffer.data(), rawBuffer.size(), 0);
         if (bytesRead <= 0) break;
 
         ByteBuffer buffer(std::vector<uint8_t>(rawBuffer.begin(), rawBuffer.begin() + bytesRead));
@@ -229,12 +247,17 @@ void NetworkManager::handleClient(int client_sock) {
 
             if (packet) {
                 packet->read(buffer);
-                packet->handle(session);
+                packet->handle(*session);
 
                 // Если игрок только что залогинился, спавним его
-                if (session.isLoggedIn && !session.hasSpawned) {
-                    session.hasSpawned = true; // Ставим флаг ДО вызова, чтобы не заспавнить дважды
+                if (session->isLoggedIn && !session->hasSpawned) {
+                    session->hasSpawned = true;
                     spawnPlayer(session);
+                }
+
+                // Трансляция движения
+                if (packetId == 0x0B || packetId == 0x0C || packetId == 0x0D) {
+                    playerManager->broadcastMovement(session);
                 }
             } else {
                 std::cerr << "Неизвестный пакет: " << (int)packetId << std::endl;
