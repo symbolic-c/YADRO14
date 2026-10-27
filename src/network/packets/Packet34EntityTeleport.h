@@ -22,5 +22,5 @@ public:
         b.writeByte(pitch);
     }
 
-    void handle(ClientSession& s) override {}
+    void handle(Player& player, ClientSession& s) override {}
 };

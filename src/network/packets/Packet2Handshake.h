@@ -14,8 +14,9 @@ public:
         username = buffer.readString();
     }
 
-    void handle(ClientSession& session) override {
-        std::cout << "[Сервер] Ник: " << username << ". Отправляем ответ Handshake." << std::endl;
+    void handle(Player& player, ClientSession& session) override {
+        player.username = username;
+        std::cout << "[Сервер] Handshake от " << username << std::endl;
         Packet2Handshake response;
         response.username = "-";
         session.sendPacket(response);

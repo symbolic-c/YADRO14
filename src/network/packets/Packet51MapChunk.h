@@ -49,5 +49,5 @@ public:
                   << " (Сжато до " << compressedSize << " байт)" << std::endl;
     }
 
-    void handle(ClientSession& session) override {}
+    void handle(Player& player, ClientSession& session) override {}
 };

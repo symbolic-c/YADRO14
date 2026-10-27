@@ -12,6 +12,7 @@
 #include "packets/Packet20NamedEntitySpawn.h"
 #include "packets/Packet255KickDisconnect.h"
 #include "packets/Packet29DestroyEntity.h"
+#include "packets/Packet31RelEntityMove.h"
 #include "packets/Packet34EntityTeleport.h"
 #include "packets/Packet3Chat.h"
 #include "packets/Packet50PreChunk.h"
@@ -30,6 +31,7 @@ inline void registerAllPackets() {
     PacketFactory::registerPacket(PacketId::EntityAction, []() { return std::make_shared<Packet19EntityAction>(); });
     PacketFactory::registerPacket(PacketId::NamedEntitySpawn, []() { return std::make_shared<Packet20NamedEntitySpawn>(); });
     PacketFactory::registerPacket(PacketId::DestroyEntity, []() { return std::make_shared<Packet29DestroyEntity>(); });
+    PacketFactory::registerPacket(PacketId::RelEntityMove, []() { return std::make_shared<Packet31RelEntityMove>(); });
     PacketFactory::registerPacket(PacketId::EntityTeleport, []() { return std::make_shared<Packet34EntityTeleport>(); });
     PacketFactory::registerPacket(PacketId::PreChunk, []() { return std::make_shared<Packet50PreChunk>(); });
     PacketFactory::registerPacket(PacketId::MapChunk, []() { return std::make_shared<Packet51MapChunk>(); });

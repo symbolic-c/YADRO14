@@ -38,23 +38,29 @@ public:
         std::cout << "[Login] Отправлен ответ на Login (Entity ID: " << entityId << ")" << std::endl;
     }
 
-    void handle(ClientSession& session) override {
-        session.username = username;
+    void handle(Player& player, ClientSession& session) override {
         std::cout << "[Сервер] Получен Login от " << username << std::endl;
 
-        Packet3Chat chat_response;
-        chat_response.message = username + " joined da game.";
-        session.sendPacket(chat_response);
+        // 1. Записываем данные в уже существующий объект Player
+        player.username = username;
+        // Если нужно сохранить protocolVersion из ответа, можно добавить поле в Player
 
+
+        // 3. Формируем ответ на Login
         Packet1Login response;
+        response.entityId = player.entityId;
         response.protocolVersion = 14;
         response.username = username;
         response.mapSeed = 0;
         response.dimension = 0;
         session.sendPacket(response);
+
+        // 2. Отправляем чат о входе
+        Packet3Chat joinMsg;
+        joinMsg.message = username + " joined the game.";
+        session.playerManager->broadcast(joinMsg, -1);
+
         session.isLoggedIn = true;
-
-
         std::cout << "[Сервер] Отправлен Login." << std::endl;
     }
 };

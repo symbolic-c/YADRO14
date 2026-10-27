@@ -19,10 +19,9 @@ public:
         buffer.writeString(message);
     }
 
-    void handle(ClientSession &session) override {
+    void handle(Player& player, ClientSession &session) override {
         Packet3Chat response;
-        response.message = "<" + session.username + "> " + message;
-        std::cout << response.message << std::endl;
-        session.sendPacket(response);
+        response.message = "<" + player.username + "> " + message;
+        session.playerManager->broadcast(response, -1);
     }
 };

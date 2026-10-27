@@ -15,7 +15,7 @@ public:
     Packet20NamedEntitySpawn() : heldItem(0) {} // По умолчанию 0 (пустая рука)
 
     PacketId getId() const override { return static_cast<PacketId>(0x14); }
-    
+
     void read(ByteBuffer& b) override {}
 
     void write(ByteBuffer& b) const override {
@@ -29,5 +29,5 @@ public:
         b.writeInt16(heldItem); // <--- ОБЯЗАТЕЛЬНО В КОНЦЕ!
     }
 
-    void handle(ClientSession& s) override {}
+    void handle(Player& player, ClientSession& s) override {}
 };

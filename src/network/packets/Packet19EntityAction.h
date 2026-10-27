@@ -24,5 +24,5 @@ public:
         buffer.writeByte(actionId);
     }
 
-    void handle(ClientSession &session) override {}
+    void handle(Player& player, ClientSession &session) override {}
 };

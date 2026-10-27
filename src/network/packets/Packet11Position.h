@@ -26,9 +26,9 @@ public:
         buffer.writeBool(onGround);
     }
 
-    void handle(ClientSession& session) override {
-        session.x = x;
-        session.y = y;
-        session.z = z;
+    void handle(Player& player, ClientSession& session) override {
+        player.x = x;
+        player.y = y;
+        player.z = z;
     }
 };

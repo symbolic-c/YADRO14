@@ -14,5 +14,5 @@ public:
         buffer.writeBool(onGround);
     }
 
-    void handle(ClientSession &session) override {}
+    void handle(Player& player, ClientSession &session) override {}
 };

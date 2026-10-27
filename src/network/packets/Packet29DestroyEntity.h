@@ -10,5 +10,5 @@ public:
     void write(ByteBuffer& b) const override {
         b.writeInt32(entityId);
     }
-    void handle(ClientSession& s) override {}
+    void handle(Player& player, ClientSession& s) override {}
 };

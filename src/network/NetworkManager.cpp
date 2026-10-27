@@ -174,12 +174,22 @@ void sendSingleChunk(ClientSession& session, int cx, int cz) {
 
 
 void NetworkManager::spawnPlayer(std::shared_ptr<ClientSession> session) {
-    std::cout << "[Сервер] Спавн игрока " << session->username << std::endl;
+    if (!session->player) {
+        std::cerr << "[Ошибка] Попытка спавна игрока без объекта Player!" << std::endl;
+        return;
+    }
+
+    std::cout << "[Сервер] Спавн игрока " << session->player->username << std::endl;
 
     // 1. Отправляем PositionLook (ID 13)
     Packet13PlayerLookMove pos;
-    pos.x = session->x; pos.y = session->y; pos.stance = session->y + 1.62;
-    pos.z = session->z; pos.yaw = 0; pos.pitch = 0; pos.onGround = false;
+    pos.x = session->player->x;
+    pos.y = session->player->y;
+    pos.stance = session->player->y + 1.62;
+    pos.z = session->player->z;
+    pos.yaw = 0;
+    pos.pitch = 0;
+    pos.onGround = false;
     session->sendPacket(pos);
 
     int chunkCoords[2] = {0, 1};
@@ -206,29 +216,33 @@ void NetworkManager::spawnPlayer(std::shared_ptr<ClientSession> session) {
         }
     }
 
-    // 3. Спавн других игроков у себя
+    // 3. Показываем новому игроку всех, кто уже в игре
     for (auto& other : playerManager->getSessions()) {
-        if (other->entityId != session->entityId && other->hasSpawned) {
+        if (other->player && other->player->entityId != session->player->entityId && other->hasSpawned) {
             Packet20NamedEntitySpawn spawnOther;
-            spawnOther.entityId = other->entityId;
-            spawnOther.name = other->username;
-            spawnOther.x = (int32_t)(other->x * 32.0);
-            spawnOther.y = (int32_t)(other->y * 32.0);
-            spawnOther.z = (int32_t)(other->z * 32.0);
-            spawnOther.heldItem = 0; // Обязательно!
+            spawnOther.entityId = other->player->entityId;
+            spawnOther.name = other->player->username;
+            spawnOther.x = static_cast<int32_t>(other->player->x * 32.0);
+            spawnOther.y = static_cast<int32_t>(other->player->y * 32.0);
+            spawnOther.z = static_cast<int32_t>(other->player->z * 32.0);
+            spawnOther.rotation = static_cast<int8_t>(other->player->yaw / 360.0f * 256.0f);
+            spawnOther.pitch = static_cast<int8_t>(other->player->pitch / 360.0f * 256.0f);
+            spawnOther.heldItem = 0;
             session->sendPacket(spawnOther);
         }
     }
 
-    // 4. Спавн себя у других
+    // 4. Показываем нового игрока всем остальным
     Packet20NamedEntitySpawn mySpawn;
-    mySpawn.entityId = session->entityId;
-    mySpawn.name = session->username;
-    mySpawn.x = (int32_t)(session->x * 32.0);
-    mySpawn.y = (int32_t)(session->y * 32.0);
-    mySpawn.z = (int32_t)(session->z * 32.0);
+    mySpawn.entityId = session->player->entityId;
+    mySpawn.name = session->player->username;
+    mySpawn.x = static_cast<int32_t>(session->player->x * 32.0);
+    mySpawn.y = static_cast<int32_t>(session->player->y * 32.0);
+    mySpawn.z = static_cast<int32_t>(session->player->z * 32.0);
+    mySpawn.rotation = static_cast<int8_t>(session->player->yaw / 360.0f * 256.0f);
+    mySpawn.pitch = static_cast<int8_t>(session->player->pitch / 360.0f * 256.0f);
     mySpawn.heldItem = 0;
-    playerManager->broadcast(mySpawn, session->entityId);
+    playerManager->broadcast(mySpawn, session->player->entityId);
 }
 
 void NetworkManager::handleClient(std::shared_ptr<ClientSession> session) {
@@ -247,7 +261,9 @@ void NetworkManager::handleClient(std::shared_ptr<ClientSession> session) {
 
             if (packet) {
                 packet->read(buffer);
-                packet->handle(*session);
+
+                packet->handle(*session->player, *session);
+
 
                 // Если игрок только что залогинился, спавним его
                 if (session->isLoggedIn && !session->hasSpawned) {
@@ -256,9 +272,11 @@ void NetworkManager::handleClient(std::shared_ptr<ClientSession> session) {
                 }
 
                 // Трансляция движения
-                if (packetId == 0x0B || packetId == 0x0C || packetId == 0x0D) {
+                if (session->player && (packetId == 0x0B || packetId == 0x0C || packetId == 0x0D)) {
                     playerManager->broadcastMovement(session);
                 }
+
+
             } else {
                 std::cerr << "Неизвестный пакет: " << (int)packetId << std::endl;
                 break;

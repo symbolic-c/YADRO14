@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <network/packets/Packet29DestroyEntity.h>
+#include <network/packets/Packet3Chat.h>
 
 #include "ClientSession.h"
 #include "../network/NetworkManager.h"
@@ -63,25 +64,34 @@ void Server::start() {
         std::cout << "[Сервер] Новое подключение! Создан поток." << std::endl;
 
         auto session = std::make_shared<ClientSession>(client_sock);
-        session->entityId = nextEntityId++; // Уникальный ID
+        session->player = std::make_shared<Player>(nextEntityId++, "Unknown");
+        session->playerManager = &playerManager;
         playerManager.addSession(session);
 
         std::thread([this, session]() {
             NetworkManager network(&playerManager);
             network.handleClient(session);
 
-            playerManager.removeSession(session->entityId);
+            int32_t id = session->player ? session->player->entityId : 0;
+            std::string name = session->player ? session->player->username : "Unknown";
 
-            // Сообщаем всем, что игрок вышел
-            Packet29DestroyEntity destroy;
-            destroy.entityId = session->entityId;
-            playerManager.broadcast(destroy);
+            playerManager.removeSession(id);
+
+            if (!session->hasQuit) {
+                Packet29DestroyEntity destroy;
+                destroy.entityId = id;
+                playerManager.broadcast(destroy, -1);
+
+                Packet3Chat leaveMsg;
+                leaveMsg.message = name + " left the game (connection lost).";
+                playerManager.broadcast(leaveMsg, -1);
+            }
 #ifdef _WIN32
-            closesocket(session->entityId);
+            closesocket(session->getSocket());
 #else
-            close(session->entityId);
+            close(session->getSocket());
 #endif
-            std::cout << "[Сервер] Поток игрока завершен." << std::endl;
+            std::cout << "[Сервер] Поток игрока " << id << " завершен." << std::endl;
         }).detach();
     }
 #ifdef _WIN32

@@ -18,5 +18,5 @@ public:
         std::cout << "[Сервер] Отправлен PreChunk: X=" << x << ", Z=" << z << ", Load=" << load << std::endl;
     }
 
-    void handle(ClientSession &session) override {}
+    void handle(Player& player, ClientSession &session) override {}
 };

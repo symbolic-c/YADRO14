@@ -17,7 +17,7 @@ public:
         // KeepAlive не содержит данных.
     }
 
-    void handle(ClientSession &session) override {
+    void handle(Player& player, ClientSession &session) override {
         session.sendPacket(*this);
     }
 };

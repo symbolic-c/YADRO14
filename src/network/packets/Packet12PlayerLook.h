@@ -23,10 +23,10 @@ public:
         buffer.writeBool(onGround);
     }
 
-    void handle(ClientSession& session) override {
+    void handle(Player& player, ClientSession& session) override {
         // Обновляем состояние игрока в сессии
-        session.yaw = yaw;
-        session.pitch = pitch;
-        session.onGround = onGround;
+        player.yaw = yaw;
+        player.pitch = pitch;
+        player.onGround = onGround;
     }
 };

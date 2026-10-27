@@ -1,6 +1,7 @@
 #pragma once
 #include <utils/ByteBuffer.h>
 #include <memory>
+#include <entity/Player.h>
 
 #include "PacketIds.h"
 
@@ -13,5 +14,5 @@ public:
 
     virtual void read(ByteBuffer& buffer) = 0;
     virtual void write(ByteBuffer& buffer) const = 0;
-    virtual void handle(ClientSession& session) = 0;
+    virtual void handle(Player& player, ClientSession& session) = 0;
 };

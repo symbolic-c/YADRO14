@@ -20,6 +20,7 @@ enum class PacketId : uint8_t {
 
     NamedEntitySpawn = 0x14,
     DestroyEntity   = 0x1D,
+    RelEntityMove   = 0x1F,
     EntityTeleport  = 0x22,
     PreChunk        = 0x32,
     MapChunk        = 0x33,
