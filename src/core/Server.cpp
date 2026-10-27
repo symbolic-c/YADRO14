@@ -60,17 +60,18 @@ void Server::start() {
         int client_sock = accept(server_fd, (sockaddr*)&client_addr, &client_len);
         if (client_sock < 0) continue;
 
-        std::cout << "\n[+] Клиент подключился!" << std::endl;
+        std::cout << "[Сервер] Новое подключение! Создан поток." << std::endl;
 
-        NetworkManager network_manager;
-        network_manager.handleClient(client_sock);
-        std::cout << "[-] Клиент отключился." << std::endl;
-
+        std::thread([client_sock]() {
+            NetworkManager network_manager;
+            network_manager.handleClient(client_sock);
 #ifdef _WIN32
-        closesocket(client_sock);
+            closesocket(client_sock);
 #else
-        close(client_sock);
+            close(client_sock);
 #endif
+            std::cout << "[Сервер] Поток игрока завершен." << std::endl;
+        }).detach();
     }
 #ifdef _WIN32
     WSACleanup();

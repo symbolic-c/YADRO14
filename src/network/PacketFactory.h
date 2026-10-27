@@ -13,7 +13,7 @@ public:
         getRegistry()[static_cast<uint8_t>(id)] = creator;
     }
 
-    static std::shared_ptr<Packet> createPacket(uint8_t id) {
+    static std:: shared_ptr<Packet> createPacket(uint8_t id) {
         auto it = getRegistry().find(id);
         if (it != getRegistry().end()) return it->second();
         return nullptr;

@@ -8,7 +8,7 @@
 class Packet1Login : public Packet {
 public:
     // Поля для ответа сервера
-    int32_t protocolVersion = 14;
+    int32_t protocolVersion = 17;
     int32_t entityId = 1;
     int64_t mapSeed = 0;
     int64_t seed = 0;

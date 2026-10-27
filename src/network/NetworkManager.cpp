@@ -172,30 +172,6 @@ void sendSingleChunk(ClientSession& session, int cx, int cz) {
     session.sendPacket(chunk);
 }
 
-void NetworkManager::loadChunksAroundPlayer(ClientSession& session) {
-    // Вычисляем, в каком чанке находится игрок
-    int currentChunkX = static_cast<int>(std::floor(session.x / 16.0));
-    int currentChunkZ = static_cast<int>(std::floor(session.z / 16.0));
-
-    // Если игрок все еще в том же чанке, ничего не делаем
-    if (currentChunkX == session.lastChunkX && currentChunkZ == session.lastChunkZ) {
-        return;
-    }
-
-    std::cout << "[Сервер] Игрок перешел в чанк " << currentChunkX << ", " << currentChunkZ << ". Загрузка..." << std::endl;
-
-    session.lastChunkX = currentChunkX;
-    session.lastChunkZ = currentChunkZ;
-
-    // Загружаем сетку 5x5 чанков вокруг игрока (радиус 2)
-    int radius = 5;
-    for (int cx = currentChunkX - radius; cx <= currentChunkX + radius; ++cx) {
-        for (int cz = currentChunkZ - radius; cz <= currentChunkZ + radius; ++cz) {
-            sendSingleChunk(session, cx, cz);
-        }
-    }
-}
-
 
 void NetworkManager::spawnPlayer(ClientSession& session) {
     std::cout << "[Сервер] Спавн игрока..." << std::endl;
@@ -211,9 +187,10 @@ void NetworkManager::spawnPlayer(ClientSession& session) {
     pos.onGround = false;
     session.sendPacket(pos);
 
-    // 2. Отправляем чанки 3x3
-    for (int cx = -1; cx <= 1; ++cx) {
-        for (int cz = -1; cz <= 1; ++cz) {
+    int chunkCoords[2] = {0, 1};
+
+    for (int cx : chunkCoords) {
+        for (int cz : chunkCoords) {
             // PreChunk (ID 50)
             Packet50PreChunk pre;
             pre.x = cx;
@@ -223,13 +200,13 @@ void NetworkManager::spawnPlayer(ClientSession& session) {
 
             // MapChunk (ID 51)
             Packet51MapChunk chunk;
-            chunk.x = cx * 16;
+            chunk.x = cx * 16; // Координаты в блоках
             chunk.z = cz * 16;
             chunk.y = 0;
             chunk.width = 15;
             chunk.height = 127;
             chunk.length = 15;
-            chunk.rawData = FlatWorldGenerator::generateChunk(); // Используем генератор
+            chunk.rawData = FlatWorldGenerator::generateChunk();
             session.sendPacket(chunk);
         }
     }
@@ -258,10 +235,6 @@ void NetworkManager::handleClient(int client_sock) {
                 if (session.isLoggedIn && !session.hasSpawned) {
                     session.hasSpawned = true; // Ставим флаг ДО вызова, чтобы не заспавнить дважды
                     spawnPlayer(session);
-                }
-
-                if (packetId == 0x0B || packetId == 0x0D) {
-                    loadChunksAroundPlayer(session);
                 }
             } else {
                 std::cerr << "Неизвестный пакет: " << (int)packetId << std::endl;
