@@ -13,6 +13,8 @@ add_executable(YADRO14_CORE
         src/core/PlayerManager.cpp
         src/network/NetworkManager.cpp
         src/world/FlatWorldGenerator.cpp
+        src/world/World.cpp
+        src/world/World.h
 )
 
 find_package(ZLIB REQUIRED)

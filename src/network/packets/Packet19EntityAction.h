@@ -1,6 +1,8 @@
 #pragma once
 #include <network/Packet.h>
 
+#include "Packet40EntityMetadata.h"
+
 
 class Packet19EntityAction : public Packet {
 public:
@@ -12,11 +14,6 @@ public:
     void read(ByteBuffer &buffer) override {
         entityId = buffer.readInt32();
         actionId = buffer.readByte();
-
-        // Расшифровка действий для отладки
-        if (actionId == 1) std::cout << "[Сервер] Игрок начал красться." << std::endl;
-        else if (actionId == 2) std::cout << "[Сервер] Игрок перестал красться." << std::endl;
-        else if (actionId == 3) std::cout << "[Сервер] Игрок перестал спать." << std::endl;
     }
 
     void write(ByteBuffer &buffer) const override {
@@ -24,5 +21,28 @@ public:
         buffer.writeByte(actionId);
     }
 
-    void handle(Player& player, ClientSession &session) override {}
+    void handle(Player& player, ClientSession &session) override {
+        bool isSneaking = player.isSneaking;
+
+        if (actionId == 1) { // Начал красться
+            player.isSneaking = true;
+            isSneaking = true;
+            std::cout << "[Сервер] " << player.username << " начал красться." << std::endl;
+        } else if (actionId == 2) { // Перестал красться
+            player.isSneaking = false;
+            isSneaking = false;
+            std::cout << "[Сервер] " << player.username << " перестал красться." << std::endl;
+        } else {
+            return; // Другие действия (сон и т.д.) игнорируем
+        }
+
+        if (session.playerManager) {
+            Packet40EntityMetadata meta;
+            meta.entityId = player.entityId;
+            meta.setSneaking(isSneaking);
+
+            // Рассылаем всем, КРОМЕ самого игрока (он уже знает, что присел)
+            session.playerManager->broadcast(meta, player.entityId);
+        }
+    }
 };

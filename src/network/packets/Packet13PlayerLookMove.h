@@ -35,5 +35,11 @@ public:
         player.x = x;
         player.y = y;
         player.z = z;
+        player.yaw = yaw; player.pitch = pitch; player.onGround = onGround;
+        
+        if (session.playerManager) {
+            session.playerManager->broadcastMovement(session);
+            session.playerManager->broadcastRotation(session);
+        }
     }
 };

@@ -10,11 +10,15 @@
     #include <unistd.h>
 #endif
 
+class World;
+class Player;
+class PlayerManager;
 
 class ClientSession {
 public:
     ClientSession(int socket) : client_sock(socket) {}
     class PlayerManager* playerManager = nullptr;
+    World* world = nullptr;
     void sendPacket(Packet& packet) {
         std::lock_guard<std::mutex> lock(sendMutex);
 

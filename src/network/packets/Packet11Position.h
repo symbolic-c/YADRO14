@@ -30,5 +30,10 @@ public:
         player.x = x;
         player.y = y;
         player.z = z;
+        player.onGround = onGround;
+
+        if (session.playerManager) {
+            session.playerManager->broadcastMovement(session); // *См. примечание ниже
+        }
     }
 };

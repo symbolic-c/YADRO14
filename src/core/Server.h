@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <thread>
+#include <world/World.h>
 
 #include "PlayerManager.h"
 
@@ -9,8 +10,10 @@ public:
     Server(uint16_t port);
     PlayerManager& getPlayerManager() { return playerManager; }
     void start();
+    World& getWorld() { return world; }
 private:
     uint16_t port;
     std::atomic<int32_t> nextEntityId{1};
     PlayerManager playerManager;
+    World world;
 };

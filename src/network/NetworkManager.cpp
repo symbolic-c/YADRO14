@@ -153,6 +153,50 @@
 //         updater.join();
 //     }
 // }
+std::vector<uint8_t> World::generateChunkData(int chunkX, int chunkZ) {
+    std::vector<uint8_t> data;
+    data.reserve(82176);
+
+    // Блокируем мьютекс ОДИН раз на весь чанк (для производительности)
+    std::lock_guard<std::mutex> lock(worldMutex);
+
+    for (int x = 0; x < 16; ++x) {
+        for (int z = 0; z < 16; ++z) {
+            for (int y = 0; y < 128; ++y) {
+                // Глобальные координаты блока в мире
+                int worldX = chunkX * 16 + x;
+                int worldZ = chunkZ * 16 + z;
+
+                auto key = std::make_tuple(worldX, y, worldZ);
+                uint8_t blockId = 0x00; // По умолчанию воздух
+
+                // 1. Проверяем, изменял ли игрок этот блок
+                if (blocks.find(key) != blocks.end()) {
+                    blockId = blocks[key];
+                } else {
+                    // 2. Если нет, генерируем базовый ландшафт (плоский мир)
+                    if (y == 0) blockId = 0x07;      // Бедрок
+                    else if (y == 1 || y == 2) blockId = 0x03; // Земля
+                    else if (y == 3) blockId = 0x02; // Трава
+                    else blockId = 0x00;             // Воздух
+                }
+
+                data.push_back(blockId);
+            }
+        }
+    }
+
+    // Метаданные (16384)
+    for (int i = 0; i < 16384; ++i) data.push_back(0x00);
+    // Свет блоков (16384)
+    for (int i = 0; i < 16384; ++i) data.push_back(0x00);
+    // Небесный свет (16384)
+    for (int i = 0; i < 16384; ++i) data.push_back(0xFF);
+    // Биомы (256)
+    for (int i = 0; i < 256; ++i) data.push_back(0x01);
+
+    return data;
+}
 
 void sendSingleChunk(ClientSession& session, int cx, int cz) {
     Packet50PreChunk pre;
@@ -162,13 +206,16 @@ void sendSingleChunk(ClientSession& session, int cx, int cz) {
     session.sendPacket(pre);
 
     Packet51MapChunk chunk;
-    chunk.x = cx * 16; // Координаты в блоках!
+    chunk.x = cx * 16;
     chunk.z = cz * 16;
     chunk.y = 0;
     chunk.width = 15;
     chunk.height = 127;
     chunk.length = 15;
-    chunk.rawData = FlatWorldGenerator::generateChunk();
+
+    // БЕРЕМ ДАННЫЕ ИЗ МИРА, А НЕ ИЗ ГЕНЕРАТОРА!
+    chunk.rawData = session.world->generateChunkData(cx, cz);
+
     session.sendPacket(chunk);
 }
 
@@ -205,13 +252,14 @@ void NetworkManager::spawnPlayer(std::shared_ptr<ClientSession> session) {
 
             // MapChunk (ID 51)
             Packet51MapChunk chunk;
-            chunk.x = cx * 16; // Координаты в блоках
+            chunk.x = cx * 16;
             chunk.z = cz * 16;
             chunk.y = 0;
             chunk.width = 15;
             chunk.height = 127;
             chunk.length = 15;
-            chunk.rawData = FlatWorldGenerator::generateChunk();
+            // БЕРЕМ ДАННЫЕ ИЗ МИРА
+            chunk.rawData = session->world->generateChunkData(cx, cz);
             session->sendPacket(chunk);
         }
     }
@@ -269,11 +317,6 @@ void NetworkManager::handleClient(std::shared_ptr<ClientSession> session) {
                 if (session->isLoggedIn && !session->hasSpawned) {
                     session->hasSpawned = true;
                     spawnPlayer(session);
-                }
-
-                // Трансляция движения
-                if (session->player && (packetId == 0x0B || packetId == 0x0C || packetId == 0x0D)) {
-                    playerManager->broadcastMovement(session);
                 }
 
 

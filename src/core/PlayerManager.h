@@ -17,7 +17,8 @@ public:
     std::vector<std::shared_ptr<ClientSession>> getSessions();
 
     // Трансляция движения конкретного игрока
-    void broadcastMovement(std::shared_ptr<ClientSession> player);
+    void broadcastMovement(ClientSession& session);
+    void broadcastRotation(ClientSession& session);
 
 private:
     std::vector<std::shared_ptr<ClientSession>> sessions;

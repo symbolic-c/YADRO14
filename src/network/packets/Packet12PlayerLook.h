@@ -28,5 +28,9 @@ public:
         player.yaw = yaw;
         player.pitch = pitch;
         player.onGround = onGround;
+
+        if (session.playerManager) {
+            session.playerManager->broadcastRotation(session); // *См. примечание ниже
+        }
     }
 };

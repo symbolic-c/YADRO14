@@ -29,5 +29,7 @@ public:
         b.writeInt16(heldItem); // <--- ОБЯЗАТЕЛЬНО В КОНЦЕ!
     }
 
-    void handle(Player& player, ClientSession& s) override {}
+    void handle(Player& player, ClientSession& s) override {
+        
+    }
 };

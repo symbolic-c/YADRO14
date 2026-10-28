@@ -15,20 +15,30 @@ enum class PacketId : uint8_t {
     Chat            = 0x03,
     Flying          = 0x0A,
     PlayerLook      = 0x0C,
+    Animation       = 0x12,
 
     // --- Только от Сервера к Клиенту (Clientbound) ---
 
+    UpdateTime      = 0x04,
     NamedEntitySpawn = 0x14,
+    PickupSpawn     = 0x15,
+    Collect         = 0x16,
     DestroyEntity   = 0x1D,
     RelEntityMove   = 0x1F,
+    EntityLook      = 0x20,
     EntityTeleport  = 0x22,
+    EntityMetadata  = 0x28,
     PreChunk        = 0x32,
     MapChunk        = 0x33,
+    BlockChange     = 0x35,
+    SetSlot         = 0x67,
 
 
     // --- Только от Клиента к Серверу (Serverbound) ---
     Position        = 0x0B,
     PlayerLookMove  = 0x0D,
+    BlockDig        = 0x0E,
+    Place           = 0x0F,
     EntityAction    = 0x13,
 
 

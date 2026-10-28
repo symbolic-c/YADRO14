@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <network/packets/Packet31RelEntityMove.h>
+#include <network/packets/Packet32EntityLook.h>
 #include <network/packets/Packet34EntityTeleport.h>
 
 void PlayerManager::addSession(std::shared_ptr<ClientSession> session) {
@@ -35,10 +36,10 @@ std::vector<std::shared_ptr<ClientSession>> PlayerManager::getSessions() {
     return sessions; // Возвращаем копию
 }
 
-void PlayerManager::broadcastMovement(std::shared_ptr<ClientSession> session) {
-    if (!session->player) return;
+void PlayerManager::broadcastMovement(ClientSession& session) {
+    if (!session.player) return;
 
-    Player& p = *session->player;
+    Player& p = *session.player;
 
     // Вычисляем разницу между текущей позицией и последней отправленной
     double deltaX = p.x - p.lastBroadcastX;
@@ -85,4 +86,29 @@ void PlayerManager::broadcastMovement(std::shared_ptr<ClientSession> session) {
     p.lastBroadcastX = p.x;
     p.lastBroadcastY = p.y;
     p.lastBroadcastZ = p.z;
+}
+
+void PlayerManager::broadcastRotation(ClientSession& session) {
+    if (!session.player) return;
+
+    Player& p = *session.player;
+
+    // Вычисляем разницу углов
+    float deltaYaw = std::abs(p.yaw - p.lastBroadcastYaw);
+    float deltaPitch = std::abs(p.pitch - p.lastBroadcastPitch);
+
+    // Если поворот меньше 1 градуса, не шлем пакет (чтобы не спамить)
+    if (deltaYaw < 1.0f && deltaPitch < 1.0f) return;
+
+    Packet32EntityLook look;
+    look.entityId = p.entityId;
+    // Квантуем углы в 0-255
+    look.yaw = static_cast<int8_t>(p.yaw / 360.0f * 256.0f);
+    look.pitch = static_cast<int8_t>(p.pitch / 360.0f * 256.0f);
+
+    broadcast(look, p.entityId);
+
+    // Запоминаем отправленные углы
+    p.lastBroadcastYaw = p.yaw;
+    p.lastBroadcastPitch = p.pitch;
 }
